@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Decision Theater Network</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+<body>
+
+<script>
+
+    var xSize = screen.width-50;
+    var ySize = 500;
+
+    var svg = d3.select("body")
+        .append("svg")
+        .attr("width", xSize)
+        .attr("height", ySize);
+
+    var xScale = d3.scaleLinear().range([0, xSize]);
+    var yScale = d3.scaleLinear().range([0, ySize]);
+    var colorColumn = 'actual_mean_temp';
+
+    var i = 1;
+    var n = 1;
+    var y = 1;
+    function render(data){
+
+        var min = d3.min(data, function (d) { return d.actual_min_temp; });
+        var max = d3.max(data, function (d) { return d.actual_max_temp; });
+        xScale.domain([1,365]);
+        yScale.domain([min,max]);
+        console.log("min " + min + " max " + max);
+        var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+        var circles = svg.selectAll("circle").data(data);
+        var rect = svg.selectAll("rect").data(data);
+        var rect2 = svg.selectAll("rect").data(data);
+
+        circles.enter().append("circle").attr("r", 2)
+            .attr("cx", function (d) { i = i+1; return xScale(i); })
+            .attr("cy", function (d) { return yScale(d['actual_mean_temp']) })
+            .attr("fill", "black");
+
+        rect.enter().append("rect").attr("width", 2)
+            .attr("height", 2)
+            .attr("x", function (d) { n = n+1; return xScale(n); })
+            .attr("y", function (d) { return yScale(d['actual_min_temp']) })
+            .attr("fill", "gray" );
+
+        rect2.enter().append("rect").attr("width", 2)
+            .attr("height", 2)
+            .attr("x", function (d) { y = y+1; return xScale(y); })
+            .attr("y", function (d) { return yScale(d['actual_max_temp']) })
+            .attr("fill", "gray" );
+
+        circles.exit().remove();
+        rect.exit().remove();
+        rect2.exit().remove();
+
+    }
+
+
+    function type(data){
+        data.actual_mean_temp = +data.actual_mean_temp;
+        data.actual_min_temp = +data.actual_min_temp;
+        data.actual_max_temp = +data.actual_max_temp;
+        //console.log(data.date);
+        return data;
+    }
+
+    var data = d3.csv("KPHX.csv", type, render);
+
+
+
+</script>
+
+</body>
+</html>
